@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8">
+    <title>VideoUploader Pro - Upload Your Content</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+        }
+        .upload-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-width: 1000px;
+            margin: 20px auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+            vertical-align: middle;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        input[type="text"], textarea, select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        textarea {
+            height: 60px;
+            resize: vertical;
+        }
+        .file-info {
+            margin-top: 5px;
+            font-size: 12px;
+            color: #666;
+        }
+        .submit-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            display: block;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .submit-btn:hover {
+            background-color: #45a049;
+        }
+        .preview {
+            margin-top: 10px;
+        }
+        .preview img, .preview video {
+            max-width: 100%;
+            height: auto;
+            max-height: 100px;
+        }
+        .file-select-btn {
+            background-color: #008CBA;
+            color: white;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            display: inline-block;
+        }
+        .file-select-btn:hover {
+            background-color: #007bb5;
+        }
+        .remove-video-btn {
+            background-color: #f44336;
+            color: white;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .remove-video-btn:hover {
+            background-color: #da190b;
+        }
+        .add-video-btn {
+            background-color: #008CBA;
+            color: white;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            display: block;
+            width: 200px;
+            margin: 20px auto;
+        }
+        .add-video-btn:hover {
+            background-color: #007bb5;
+        }
+        .progress-container {
+            width: 100%;
+            background-color: #f3f3f3;
+            border-radius: 4px;
+            margin-top: 20px;
+            display: none;
+        }
+        .progress-bar {
+            width: 0%;
+            height: 20px;
+            background-color: #4CAF50;
+            border-radius: 4px;
+            text-align: center;
+            line-height: 20px;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="upload-container">
+        <h1>Upload Your Video</h1>
+        <form id="upload-form" action="{% url 'video_upload' %}" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <table id="upload-table">
+                <thead>
+                    <tr>
+                        <th>Thumbnail Preview</th>
+                        <th>Video Preview</th>
+                        <th>Thumbnail File Select</th>
+                        <th>Video File Select</th>
+                        <th>Category</th>
+                        <th>Country</th>
+                        <th>File Name</th>
+                        <th>Description</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="upload-rows">
+                    <tr class="upload-row" id="video-row-0">
+                        <td class="preview" id="thumbnail-preview-0"></td>
+                        <td class="preview" id="video-preview-0"></td>
+                        <td>
+                            <label for="thumbnail-upload-0" class="file-select-btn">
+                                Select Thumbnail
+                                <input type="file" id="thumbnail-upload-0" name="thumbnail-0" accept="image/*" onchange="handleFileSelect(this, 'thumbnail-info-0', 'thumbnail-preview-0', 'Thumbnail')">
+                            </label>
+                            <div id="thumbnail-info-0" class="file-info"></div>
+                        </td>
+                        <td>
+                            <label for="video-upload-0" class="file-select-btn">
+                                Select Video
+                                <input type="file" id="video-upload-0" name="video-0" accept="video/*" onchange="handleFileSelect(this, 'video-info-0', 'video-preview-0', 'Video')">
+                            </label>
+                            <div id="video-info-0" class="file-info"></div>
+                        </td>
+                        <td>
+                            <select id="category-0" name="category-0" required>
+                                <option value="animation">애니메이션</option>
+                                <option value="movie">영화</option>
+                                <option value="custom">직접입력</option>
+                            </select>
+                            <input type="text" id="custom-category-0" name="custom_category-0" placeholder="직접입력 카테고리" style="display:none;">
+                        </td>
+                        <td>
+                            <select id="country-0" name="country-0" required>
+                                <option value="kr">한국</option>
+                                <option value="en">영어</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="text" id="file-name-0" name="file_name-0" placeholder="Enter file name" required>
+                        </td>
+                        <td>
+                            <textarea id="description-0" name="description-0" placeholder="Enter video description"></textarea>
+                        </td>
+                        <td>
+                            <button type="button" class="remove-video-btn" onclick="removeRow(0)">Remove</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <button type="button" class="add-video-btn" onclick="addRow()">Add Another Video</button>
+            <button type="submit" class="submit-btn">Upload Videos</button>
+        </form>
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar">0%</div>
+        </div>
+    </div>
+    <script>
+        // 전역 변수로 rowIndex 선언
+        var rowIndex = 1;
+
+        function handleFileSelect(inputElement, infoElementId, previewElementId, fileType) {
+            var file = inputElement.files[0];
+            document.getElementById(infoElementId).textContent = fileType + ': ' + file.name;
+
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var previewElement = document.getElementById(previewElementId);
+                previewElement.innerHTML = '';
+                if (fileType === 'Thumbnail') {
+                    var img = document.createElement('img');
+                    img.src = e.target.result;
+                    previewElement.appendChild(img);
+                } else if (fileType === 'Video') {
+                    var video = document.createElement('video');
+                    video.src = e.target.result;
+                    video.controls = true;
+                    previewElement.appendChild(video);
+                }
+            };
+            reader.onerror = function() {
+                console.error("Error reading file:", file);
+            };
+            reader.readAsDataURL(file);
+        }
+
+
+        document.getElementById('category-0').addEventListener('change', function(e) {
+            if (e.target.value === 'custom') {
+                document.getElementById('custom-category-0').style.display = 'block';
+            } else {
+                document.getElementById('custom-category-0').style.display = 'none';
+            }
+        });
+
+        function addRow() {
+            const tableBody = document.getElementById('upload-rows');
+            const newRow = document.createElement('tr');
+            newRow.className = 'upload-row';
+            newRow.id = `video-row-${rowIndex}`;
+            newRow.innerHTML = `
+                <td class="preview" id="thumbnail-preview-${rowIndex}"></td>
+                <td class="preview" id="video-preview-${rowIndex}"></td>
+                <td>
+                    <label for="thumbnail-upload-${rowIndex}" class="file-select-btn">
+                        Select Thumbnail
+                        <input type="file" id="thumbnail-upload-${rowIndex}" name="thumbnail-${rowIndex}" accept="image/*" onchange="handleFileSelect(this, 'thumbnail-info-${rowIndex}', 'thumbnail-preview-${rowIndex}', 'Thumbnail')">
+                    </label>
+                    <div id="thumbnail-info-${rowIndex}" class="file-info"></div>
+                </td>
+                <td>
+                    <label for="video-upload-${rowIndex}" class="file-select-btn">
+                        Select Video
+                        <input type="file" id="video-upload-${rowIndex}" name="video-${rowIndex}" accept="video/*" onchange="handleFileSelect(this, 'video-info-${rowIndex}', 'video-preview-${rowIndex}', 'Video')">
+                    </label>
+                    <div id="video-info-${rowIndex}" class="file-info"></div>
+                </td>
+                <td>
+                    <select id="category-${rowIndex}" name="category-${rowIndex}" required>
+                        <option value="animation">애니메이션</option>
+                        <option value="movie">영화</option>
+                        <option value="custom">직접입력</option>
+                    </select>
+                    <input type="text" id="custom-category-${rowIndex}" name="custom_category-${rowIndex}" placeholder="직접입력 카테고리" style="display:none;">
+                </td>
+                <td>
+                    <select id="country-${rowIndex}" name="country-${rowIndex}" required>
+                        <option value="kr">한국</option>
+                        <option value="en">영어</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="text" id="file-name-${rowIndex}" name="file_name-${rowIndex}" placeholder="Enter file name" required>
+                </td>
+                <td>
+                    <textarea id="description-${rowIndex}" name="description-${rowIndex}" placeholder="Enter video description"></textarea>
+                </td>
+                <td>
+                    <button type="button" class="remove-video-btn" onclick="removeRow(${rowIndex})">Remove</button>
+                </td>
+            `;
+            tableBody.appendChild(newRow);
+
+            document.getElementById(`category-${rowIndex}`).addEventListener('change', function(e) {
+                if (e.target.value === 'custom') {
+                    document.getElementById(`custom-category-${rowIndex}`).style.display = 'block';
+                } else {
+                    document.getElementById(`custom-category-${rowIndex}`).style.display = 'none';
+                }
+            });
+
+            rowIndex++;
+        }
+
+
+        function removeRow(index) {
+            const row = document.getElementById(`video-row-${index}`);
+            if (row && index !== 0) {
+                row.remove();
+            } else {
+                console.log('Cannot remove the first row or row not found.');
+            }
+        }
+
+        document.getElementById('upload-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var formData = new FormData(this);
+            var progressBar = document.getElementById('progress-bar');
+            var progressContainer = document.querySelector('.progress-container');
+
+            progressContainer.style.display = 'block';
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', this.action, true);
+            xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+
+            xhr.upload.onprogress = function(e) {
+                if (e.lengthComputable) {
+                    var percentComplete = (e.loaded / e.total) * 100;
+                    progressBar.style.width = percentComplete + '%';
+                    progressBar.textContent = Math.round(percentComplete) + '%';
+                }
+            };
+
+            xhr.onerror = function() {
+                alert('Upload failed. Please try again.');
+                progressContainer.style.display = 'none';
+            };
+
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    alert('Upload complete!');
+                } else {
+                    alert('Upload failed. Please try again.');
+                }
+                progressContainer.style.display = 'none';
+            };
+
+            xhr.send(formData);
+        });
+
+    </script>
+</body>
+</html>
