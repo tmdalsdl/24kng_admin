@@ -58,11 +58,14 @@ jobs:
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
         AWS_EC2_IP: ${{ secrets.AWS_EC2_IP }}
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        DOCKER_IMAGE_NAME: ${{ secrets.DOCKER_IMAGE_NAME }}
       run: |
         mkdir -p ~/.ssh
         echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
         ssh-keyscan -H $AWS_EC2_IP >> ~/.ssh/known_hosts
+        ssh $SSH_USERNAME@$AWS_EC2_IP 'mkdir -p ~/app' # 대상 디렉토리 생성
         scp -r ./* $SSH_USERNAME@$AWS_EC2_IP:~/app
         ssh $SSH_USERNAME@$AWS_EC2_IP << 'EOF'
           cd ~/app
