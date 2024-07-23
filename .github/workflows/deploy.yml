@@ -41,19 +41,33 @@ jobs:
 
     - name: Create .env file
       run: |
+        set -e  # 오류 발생 시 스크립트 종료
         touch .env
+        echo "Touched .env file"
         echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
+        echo "Added AWS_ACCESS_KEY_ID"
         echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
+        echo "Added AWS_SECRET_ACCESS_KEY"
         echo "AWS_STORAGE_BUCKET_NAME=${{ secrets.AWS_STORAGE_BUCKET_NAME }}" >> .env
+        echo "Added AWS_STORAGE_BUCKET_NAME"
         echo "AWS_THUMBNAIL_BUCKET_NAME=${{ secrets.AWS_THUMBNAIL_BUCKET_NAME }}" >> .env
+        echo "Added AWS_THUMBNAIL_BUCKET_NAME"
         echo "AWS_S3_REGION_NAME=${{ secrets.AWS_S3_REGION_NAME }}" >> .env
+        echo "Added AWS_S3_REGION_NAME"
         echo "ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }}" >> .env
+        echo "Added ALLOWED_HOSTS"
         echo "AWS_CLOUDFRONT_URL=${{ secrets.AWS_CLOUDFRONT_URL }}" >> .env
+        echo "Added AWS_CLOUDFRONT_URL"
         echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
+        echo "Added DB_NAME"
         echo "DB_USER=${{ secrets.DB_USER }}" >> .env
+        echo "Added DB_USER"
         echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+        echo "Added DB_PASSWORD"
         echo "DB_ROOT_PASSWORD=${{ secrets.DB_ROOT_PASSWORD }}" >> .env
+        echo "Added DB_ROOT_PASSWORD"
         cat .env  # 디버깅용으로 .env 파일 내용을 출력
+        echo "Finished creating .env file"
 
     - name: Install Docker on EC2
       env:
@@ -66,6 +80,7 @@ jobs:
         chmod 600 ~/.ssh/id_rsa
         ssh-keyscan -H $AWS_EC2_IP >> ~/.ssh/known_hosts
         ssh $SSH_USERNAME@$AWS_EC2_IP <<EOF
+          set -e
           for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove -y \$pkg; done
           sudo apt-get update
           sudo apt-get install -y ca-certificates curl
