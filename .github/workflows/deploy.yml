@@ -63,20 +63,19 @@ jobs:
         echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
         ssh-keyscan -H $AWS_EC2_IP >> ~/.ssh/known_hosts
-        ssh $SSH_USERNAME@$AWS_EC2_IP << 'EOF'
-          for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove -y $pkg; done
+        ssh $SSH_USERNAME@$AWS_EC2_IP <<EOF
+          for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove -y \$pkg; done
           sudo apt-get update
           sudo apt-get install -y ca-certificates curl
           sudo install -m 0755 -d /etc/apt/keyrings
           sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
           sudo chmod a+r /etc/apt/keyrings/docker.asc
           echo \
-            "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
-            $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+            "deb [arch=\$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+            \$(. /etc/os-release && echo "\$VERSION_CODENAME") stable" | \
             sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
           sudo apt-get update
           sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-          sudo usermod -aG docker $SSH_USERNAME
         EOF
 
     - name: Deploy to EC2
@@ -93,8 +92,8 @@ jobs:
         ssh-keyscan -H $AWS_EC2_IP >> ~/.ssh/known_hosts
         ssh $SSH_USERNAME@$AWS_EC2_IP 'mkdir -p ~/app'
         scp -r ./* $SSH_USERNAME@$AWS_EC2_IP:~/app
-        ssh $SSH_USERNAME@$AWS_EC2_IP << 'EOF'
+        ssh $SSH_USERNAME@$AWS_EC2_IP <<EOF
           cd ~/app
-          docker compose down
-          docker compose up -d --build
+          sudo docker compose down
+          sudo docker compose up -d --build
         EOF
