@@ -43,31 +43,44 @@ jobs:
       run: |
         set -e  # 오류 발생 시 스크립트 종료
         touch .env
-        echo "Touched .env file" >> debug.log
+        echo "Creating .env file..."
+        
         echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
-        echo "Added AWS_ACCESS_KEY_ID" >> debug.log
+        echo "Added AWS_ACCESS_KEY_ID: $?"
+        
         echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
-        echo "Added AWS_SECRET_ACCESS_KEY" >> debug.log
+        echo "Added AWS_SECRET_ACCESS_KEY: $?"
+        
         echo "AWS_STORAGE_BUCKET_NAME=${{ secrets.AWS_STORAGE_BUCKET_NAME }}" >> .env
-        echo "Added AWS_STORAGE_BUCKET_NAME" >> debug.log
+        echo "Added AWS_STORAGE_BUCKET_NAME: $?"
+        
         echo "AWS_THUMBNAIL_BUCKET_NAME=${{ secrets.AWS_THUMBNAIL_BUCKET_NAME }}" >> .env
-        echo "Added AWS_THUMBNAIL_BUCKET_NAME" >> debug.log
+        echo "Added AWS_THUMBNAIL_BUCKET_NAME: $?"
+        
         echo "AWS_S3_REGION_NAME=${{ secrets.AWS_S3_REGION_NAME }}" >> .env
-        echo "Added AWS_S3_REGION_NAME" >> debug.log
+        echo "Added AWS_S3_REGION_NAME: $?"
+        
         echo "ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }}" >> .env
-        echo "Added ALLOWED_HOSTS" >> debug.log
+        echo "Added ALLOWED_HOSTS: $?"
+        
         echo "AWS_CLOUDFRONT_URL=${{ secrets.AWS_CLOUDFRONT_URL }}" >> .env
-        echo "Added AWS_CLOUDFRONT_URL" >> debug.log
+        echo "Added AWS_CLOUDFRONT_URL: $?"
+        
         echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
-        echo "Added DB_NAME" >> debug.log
+        echo "Added DB_NAME: $?"
+        
         echo "DB_USER=${{ secrets.DB_USER }}" >> .env
-        echo "Added DB_USER" >> debug.log
+        echo "Added DB_USER: $?"
+        
         echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
-        echo "Added DB_PASSWORD" >> debug.log
+        echo "Added DB_PASSWORD: $?"
+        
         echo "DB_ROOT_PASSWORD=${{ secrets.DB_ROOT_PASSWORD }}" >> .env
-        echo "Added DB_ROOT_PASSWORD" >> debug.log
-        cat .env  # 디버깅용으로 .env 파일 내용을 출력
-        cat debug.log  # 디버깅용으로 로그 파일 내용을 출력
+        echo "Added DB_ROOT_PASSWORD: $?"
+        
+        echo "Contents of .env file:"
+        cat .env
+        
         echo "Finished creating .env file"
 
     - name: Install Docker on EC2
