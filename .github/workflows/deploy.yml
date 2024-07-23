@@ -1,0 +1,67 @@
+name: CI and Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+
+    - name: Login to DockerHub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Build and push Docker image
+      run: |
+        docker build -t lsm12345/projectadminpage:latest .
+        docker push lsm12345/projectadminpage:latest
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Create .env file
+      run: |
+        echo AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} >> .env
+        echo AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} >> .env
+        echo AWS_STORAGE_BUCKET_NAME=${{ secrets.AWS_STORAGE_BUCKET_NAME }} >> .env
+        echo AWS_THUMBNAIL_BUCKET_NAME=${{ secrets.AWS_THUMBNAIL_BUCKET_NAME }} >> .env
+        echo AWS_S3_REGION_NAME=${{ secrets.AWS_S3_REGION_NAME }} >> .env
+        echo ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }} >> .env
+        echo AWS_CLOUDFRONT_URL=${{ secrets.AWS_CLOUDFRONT_URL }} >> .env
+        echo DB_NAME=${{ secrets.DB_NAME }} >> .env
+        echo DB_USER=${{ secrets.DB_USER }} >> .env
+        echo DB_PASSWORD=${{ secrets.DB_PASSWORD }} >> .env
+        echo DB_ROOT_PASSWORD=${{ secrets.DB_ROOT_PASSWORD }} >> .env
+
+    - name: Deploy to EC2
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
+        AWS_EC2_IP: ${{ secrets.AWS_EC2_IP }}
+      run: |
+        mkdir -p ~/.ssh
+        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H $AWS_EC2_IP >> ~/.ssh/known_hosts
+        scp -r ./* $SSH_USERNAME@$AWS_EC2_IP:~/app
+        ssh $SSH_USERNAME@$AWS_EC2_IP << 'EOF'
+          cd ~/app
+          docker compose down
+          docker compose up -d --build
+        EOF
