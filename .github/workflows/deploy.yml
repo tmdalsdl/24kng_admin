@@ -23,9 +23,12 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
 
     - name: Build and push Docker image
+      env:
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        DOCKER_IMAGE_NAME: ${{ secrets.DOCKER_IMAGE_NAME }}
       run: |
-        docker build -t lsm12345/projectadminpage:latest .
-        docker push lsm12345/projectadminpage:latest
+        docker build -t $DOCKER_USERNAME/$DOCKER_IMAGE_NAME .
+        docker push $DOCKER_USERNAME/$DOCKER_IMAGE_NAME
 
   deploy:
     needs: build
