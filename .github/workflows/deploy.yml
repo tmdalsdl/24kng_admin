@@ -41,17 +41,19 @@ jobs:
 
     - name: Create .env file
       run: |
-        echo AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} >> .env
-        echo AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} >> .env
-        echo AWS_STORAGE_BUCKET_NAME=${{ secrets.AWS_STORAGE_BUCKET_NAME }} >> .env
-        echo AWS_THUMBNAIL_BUCKET_NAME=${{ secrets.AWS_THUMBNAIL_BUCKET_NAME }} >> .env
-        echo AWS_S3_REGION_NAME=${{ secrets.AWS_S3_REGION_NAME }} >> .env
-        echo ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }} >> .env
-        echo AWS_CLOUDFRONT_URL=${{ secrets.AWS_CLOUDFRONT_URL }} >> .env
-        echo DB_NAME=${{ secrets.DB_NAME }} >> .env
-        echo DB_USER=${{ secrets.DB_USER }} >> .env
-        echo DB_PASSWORD=${{ secrets.DB_PASSWORD }} >> .env
-        echo DB_ROOT_PASSWORD=${{ secrets.DB_ROOT_PASSWORD }} >> .env
+        touch .env
+        echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
+        echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
+        echo "AWS_STORAGE_BUCKET_NAME=${{ secrets.AWS_STORAGE_BUCKET_NAME }}" >> .env
+        echo "AWS_THUMBNAIL_BUCKET_NAME=${{ secrets.AWS_THUMBNAIL_BUCKET_NAME }}" >> .env
+        echo "AWS_S3_REGION_NAME=${{ secrets.AWS_S3_REGION_NAME }}" >> .env
+        echo "ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }}" >> .env
+        echo "AWS_CLOUDFRONT_URL=${{ secrets.AWS_CLOUDFRONT_URL }}" >> .env
+        echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
+        echo "DB_USER=${{ secrets.DB_USER }}" >> .env
+        echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+        echo "DB_ROOT_PASSWORD=${{ secrets.DB_ROOT_PASSWORD }}" >> .env
+        cat .env  # 디버깅용으로 .env 파일 내용을 출력
 
     - name: Install Docker on EC2
       env:
@@ -94,7 +96,7 @@ jobs:
         scp -r ./* $SSH_USERNAME@$AWS_EC2_IP:~/app
         ssh $SSH_USERNAME@$AWS_EC2_IP <<EOF
           cd ~/app
-          echo $(cat .env)
+          echo $(cat .env)  # 디버깅용으로 .env 파일 내용을 출력
           sudo docker compose down
           sudo docker compose up -d --build
         EOF
