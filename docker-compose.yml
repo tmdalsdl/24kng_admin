@@ -34,7 +34,6 @@ services:
       - web
     volumes:
       - .:/app
-    restart: always
 
   mariadb:
     image: mariadb:latest
@@ -48,7 +47,6 @@ services:
       - mariadb_data:/var/lib/mysql
     ports:
       - "3306:3306"
-    restart: always
 
 volumes:
   mariadb_data:
