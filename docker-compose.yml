@@ -5,6 +5,7 @@ services:
     image: lsm12345/projectadminpage:latest
     command: >
       sh -c "
+      python manage.py makemigrations &&
       python manage.py migrate &&
       gunicorn myproject.wsgi:application --bind 0.0.0.0:8000"
     volumes:
