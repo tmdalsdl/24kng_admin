@@ -3,7 +3,10 @@ version: '3.7'
 services:
   web:
     image: lsm12345/projectadminpage:latest
-    command: gunicorn myproject.wsgi:application --bind 0.0.0.0:8000
+    command: >
+      sh -c "
+      python manage.py migrate &&
+      gunicorn myproject.wsgi:application --bind 0.0.0.0:8000"
     volumes:
       - .:/app
     expose:
@@ -17,7 +20,7 @@ services:
       - AWS_AWS_THUMBNAIL_BUCKET_NAME=${AWS_THUMBNAIL_BUCKET_NAME}
       - AWS_S3_REGION_NAME=${AWS_S3_REGION_NAME}
       - ALLOWED_HOSTS=${ALLOWED_HOSTS}
-      - DB_HOST=mariadb  # 추가
+      - DB_HOST=mariadb
       - DB_NAME=${DB_NAME}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
