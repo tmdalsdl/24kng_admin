@@ -1,1 +1,2 @@
 github action test용 파일. github action은 main branch에 push하면 발생
+take 1 > docker-doc 삭제 코드 오류 발생 - 공식 홈페이지 코드에서 오류 발생
