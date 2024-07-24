@@ -1,5 +1,4 @@
 version: '3.7'
-
 services:
   web:
     build:
@@ -24,8 +23,10 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
     depends_on:
       - mariadb
-    restart: always  # 컨테이너 자동 재시작 설정
-
+    restart: always
+    command: >
+      sh -c "python manage.py migrate &&
+             gunicorn --bind 0.0.0.0:8000 projectadminpage.wsgi:application"
   nginx:
     build: ./nginx
     ports:
@@ -34,7 +35,6 @@ services:
       - web
     volumes:
       - .:/app
-
   mariadb:
     image: mariadb:latest
     restart: always
@@ -47,6 +47,5 @@ services:
       - mariadb_data:/var/lib/mysql
     ports:
       - "3306:3306"
-
 volumes:
   mariadb_data:
