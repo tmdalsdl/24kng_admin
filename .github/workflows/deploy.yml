@@ -123,6 +123,7 @@ jobs:
         echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
         ssh-keyscan -H $AWS_EC2_IP >> ~/.ssh/known_hosts
+        scp .env $SSH_USERNAME@$AWS_EC2_IP:~/app/.env  # 명시적으로 .env 파일 복사
         ssh $SSH_USERNAME@$AWS_EC2_IP 'mkdir -p ~/app'
         scp -r ./* $SSH_USERNAME@$AWS_EC2_IP:~/app
         ssh $SSH_USERNAME@$AWS_EC2_IP <<EOF
