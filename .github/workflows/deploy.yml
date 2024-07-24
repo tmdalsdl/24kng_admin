@@ -66,7 +66,6 @@ jobs:
         ssh-keyscan -H $AWS_EC2_IP >> ~/.ssh/known_hosts
         ssh $SSH_USERNAME@$AWS_EC2_IP <<EOF
           set -e
-          for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove -y \$pkg; done
           sudo apt-get update
           sudo apt-get install -y ca-certificates curl
           sudo install -m 0755 -d /etc/apt/keyrings
