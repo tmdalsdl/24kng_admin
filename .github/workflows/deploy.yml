@@ -82,6 +82,7 @@ jobs:
         echo "Added DB_ROOT_PASSWORD" >> debug.log
         cat .env  # 디버깅용으로 .env 파일 내용을 출력
         cat debug.log  # 디버깅용으로 로그 파일 내용을 출력
+        ls -al  # 디버깅용으로 현재 디렉토리 내용을 출력
         echo "Finished creating .env file"
 
     - name: Install Docker on EC2
@@ -126,6 +127,7 @@ jobs:
         scp -r ./* $SSH_USERNAME@$AWS_EC2_IP:~/app
         ssh $SSH_USERNAME@$AWS_EC2_IP <<EOF
           cd ~/app
+          ls -al  # 디버깅용으로 현재 디렉토리 내용을 출력
           if [ -f .env ]; then
             echo $(cat .env)  # 디버깅용으로 .env 파일 내용을 출력
           else
