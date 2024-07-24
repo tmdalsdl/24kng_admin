@@ -1,2 +1,2 @@
 github action test용 파일. github action은 main branch에 push하면 발생
-1 > was 오류. 이미지 풀 오류..?
+1 > 오류 해결, 신규 EC2 test
