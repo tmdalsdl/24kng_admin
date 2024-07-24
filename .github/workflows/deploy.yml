@@ -130,7 +130,7 @@ jobs:
           cd ~/app
           ls -al  # 디버깅용으로 현재 디렉토리 내용을 출력
           if [ -f .env ]; then
-            echo $(cat .env)  # 디버깅용으로 .env 파일 내용을 출력
+            echo $(cat .env)  # 디버깅용으로 .env 파일 내용을 출력.
           else
             echo ".env file not found"
           fi
