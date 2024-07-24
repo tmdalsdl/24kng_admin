@@ -2,12 +2,9 @@ version: '3.7'
 
 services:
   web:
+    build:
+      context: .
     image: lsm12345/projectadminpage:latest
-    command: >
-      sh -c "
-      python manage.py makemigrations &&
-      python manage.py migrate &&
-      gunicorn myproject.wsgi:application --bind 0.0.0.0:8000"
     volumes:
       - .:/app
     expose:
@@ -25,6 +22,9 @@ services:
       - DB_NAME=${DB_NAME}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
+    depends_on:
+      - mariadb
+    restart: always  # 컨테이너 자동 재시작 설정
 
   nginx:
     build: ./nginx
