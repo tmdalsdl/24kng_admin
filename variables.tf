@@ -20,8 +20,10 @@ variable "instance_name" {
 
 variable "key_name" {
   description = "Name of the SSH key pair"
+  default     = "AdminPage-test"
 }
 
 variable "public_key_path" {
   description = "Path to the public key file"
+  default     = "~/.ssh/AdminPage-test.pub"
 }

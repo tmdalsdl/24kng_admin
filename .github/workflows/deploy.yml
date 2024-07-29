@@ -49,6 +49,8 @@ jobs:
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_S3_REGION_NAME: ${{ secrets.AWS_S3_REGION_NAME }}
+        PUBLIC_KEY_PATH: ${{ secrets.PUBLIC_KEY_PATH }}
       run: |
         terraform apply -auto-approve \
           -var "region=${{ secrets.AWS_S3_REGION_NAME }}" \
@@ -127,7 +129,7 @@ jobs:
         echo "Added DB_ROOT_PASSWORD" >> debug.log
         cat .env  # 디버깅용으로 .env 파일 내용을 출력
         cat debug.log  # 디버깅용으로 로그 파일 내용을 출력
-        ls -al  # 디버깅용으로 현재 디렉토리 내용을 출력
+        ls -al  # 디버깅용으로 현재 디렉터리 내용을 출력
         echo "Finished creating .env file"
 
     - name: Install Docker and AWS CLI on EC2
