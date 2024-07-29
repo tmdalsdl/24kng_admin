@@ -159,12 +159,14 @@ jobs:
           exit 1
         fi
         
+        echo "Attempting to connect to $INSTANCE_PUBLIC_IP"
         mkdir -p ~/.ssh
         echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
         ssh-keyscan -H "$INSTANCE_PUBLIC_IP" >> ~/.ssh/known_hosts
-        ssh $SSH_USERNAME@$INSTANCE_PUBLIC_IP <<EOF
+        ssh -v $SSH_USERNAME@$INSTANCE_PUBLIC_IP <<EOF
           set -e
+          echo "Successfully connected to the instance"
           sudo apt-get update
           sudo apt-get install -y ca-certificates curl unzip
           # Docker 설치
@@ -185,6 +187,7 @@ jobs:
           aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
           aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
           aws configure set region $AWS_S3_REGION_NAME
+          echo "Installation and configuration completed successfully"
         EOF
 
     - name: Deploy to EC2
