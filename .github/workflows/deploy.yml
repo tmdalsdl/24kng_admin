@@ -159,11 +159,33 @@ jobs:
           exit 1
         fi
         
+        echo "Waiting for 60 seconds to allow EC2 instance to fully boot..."
+        sleep 60
+        
         echo "Attempting to connect to $INSTANCE_PUBLIC_IP"
         mkdir -p ~/.ssh
         echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan -H "$INSTANCE_PUBLIC_IP" >> ~/.ssh/known_hosts
+        
+        # ssh-keyscan with retry logic
+        max_retries=5
+        retry_count=0
+        while [ $retry_count -lt $max_retries ]; do
+          if ssh-keyscan -v -H "$INSTANCE_PUBLIC_IP" >> ~/.ssh/known_hosts 2>&1; then
+            echo "ssh-keyscan successful"
+            break
+          else
+            echo "ssh-keyscan failed, retrying in 30 seconds..."
+            sleep 30
+            retry_count=$((retry_count+1))
+          fi
+        done
+        
+        if [ $retry_count -eq $max_retries ]; then
+          echo "Failed to connect after $max_retries attempts"
+          exit 1
+        fi
+        
         ssh -v $SSH_USERNAME@$INSTANCE_PUBLIC_IP <<EOF 2>&1
           set -ex  # 오류 발생 시 즉시 종료하고 모든 명령어 출력
           echo "Successfully connected to the instance"
