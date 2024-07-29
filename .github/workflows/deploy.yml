@@ -82,9 +82,7 @@ jobs:
         aws configure set region ${{ secrets.AWS_S3_REGION_NAME }}
         distribution_id=$(aws cloudfront list-distributions --query 'DistributionList.Items[0].Id' --output text)
         cloudfront_domain=$(aws cloudfront get-distribution --id $distribution_id --query 'Distribution.DomainName' --output text)
-        echo "CLOUDFRONT_DOMAIN=$cloudfront_domain" >> $GITHUB_ENV
-        echo "Distribution ID: $distribution_id"
-        echo "CloudFront Domain Name: $cloudfront_domain"
+        echo "CLOUDFRONT_DOMAIN=${cloudfront_domain}" >> $GITHUB_ENV
 
     - name: Debug Secrets
       run: |
@@ -117,7 +115,7 @@ jobs:
         echo "Added AWS_THUMBNAIL_BUCKET_NAME" >> debug.log
         echo "AWS_S3_REGION_NAME=${{ secrets.AWS_S3_REGION_NAME }}" >> .env
         echo "Added AWS_S3_REGION_NAME" >> debug.log
-        echo "ALLOWED_HOSTS=${{ env.INSTANCE_PUBLIC_IP }}" >> .env
+        echo "ALLOWED_HOSTS=${INSTANCE_PUBLIC_IP}" >> .env
         echo "Added ALLOWED_HOSTS" >> debug.log
         echo "AWS_CLOUDFRONT_URL=https://${{ env.CLOUDFRONT_DOMAIN }}/" >> .env
         echo "Added AWS_CLOUDFRONT_URL" >> debug.log
