@@ -64,7 +64,9 @@ jobs:
     - name: Get Terraform output
       id: get_output
       run: |
-        echo "INSTANCE_PUBLIC_IP=$(terraform output -raw instance_public_ip)" >> $GITHUB_ENV
+        INSTANCE_PUBLIC_IP=$(terraform output -raw instance_public_ip)
+        echo "INSTANCE_PUBLIC_IP=${INSTANCE_PUBLIC_IP}" >> $GITHUB_ENV
+        echo "Terraform output: $INSTANCE_PUBLIC_IP" # 디버깅용 메시지 추가
 
   deploy:
     needs: terraform
@@ -83,6 +85,7 @@ jobs:
         distribution_id=$(aws cloudfront list-distributions --query 'DistributionList.Items[0].Id' --output text)
         cloudfront_domain=$(aws cloudfront get-distribution --id $distribution_id --query 'Distribution.DomainName' --output text)
         echo "CLOUDFRONT_DOMAIN=${cloudfront_domain}" >> $GITHUB_ENV
+        echo "CloudFront Domain: ${cloudfront_domain}" # 디버깅용 메시지 추가
 
     - name: Debug Secrets
       run: |
