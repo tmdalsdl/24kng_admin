@@ -51,6 +51,7 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_S3_REGION_NAME: ${{ secrets.AWS_S3_REGION_NAME }}
         PUBLIC_KEY_PATH: ${{ secrets.PUBLIC_KEY_PATH }}
+        AWS_AMI_ID: ${{ secrets.AWS_AMI_ID }}
       run: |
         terraform apply -auto-approve \
           -var "region=${{ secrets.AWS_S3_REGION_NAME }}" \
@@ -62,7 +63,8 @@ jobs:
 
     - name: Get Terraform output
       id: get_output
-      run: echo "INSTANCE_PUBLIC_IP=$(terraform output -raw instance_public_ip)" >> $GITHUB_ENV
+      run: |
+        echo "INSTANCE_PUBLIC_IP=$(terraform output -raw instance_public_ip)" >> $GITHUB_ENV
 
   deploy:
     needs: terraform

@@ -5,7 +5,6 @@ variable "region" {
 
 variable "ami_id" {
   description = "AMI ID to use for the instance"
-  default     = "ami-062cf18d655c0b1e8"  # AWS 콘솔에서 찾은 AMI ID를 입력하세요
 }
 
 variable "instance_type" {
