@@ -67,7 +67,7 @@
                 <span>Admin Page</span>
             </div>
             <div class="nav-item">
-                <a href="#" class="nav-link" id="dashboard-link">대시보드</a>
+                <a href="#" class="nav-link" data-url="{% url 'dashboard' %}">대시보드</a>
             </div>
             <div class="nav-item">
                 <a href="#" class="nav-link" data-url="{% url 'video_upload' %}">비디오 업로드</a>
@@ -81,7 +81,7 @@
     <script>
         $(document).ready(function() {
             // 페이지 로드 시 기본 콘텐츠 로드
-            $('#main-content').load("http://www.24kng.fun");
+            $('#main-content').load("{% url 'dashboard' %}");
 
             $('.nav-link').on('click', function(e) {
                 e.preventDefault();
@@ -89,25 +89,6 @@
                 $(this).addClass('active');
                 var url = $(this).data('url');
                 $('#main-content').load(url);
-            });
-
-            // 대시보드 링크 클릭 시 퍼블릭 IP 가져와서 연결
-            $('#dashboard-link').on('click', function(e) {
-                e.preventDefault();
-                $.ajax({
-                    url: '{% url "get_public_ip" %}',
-                    method: 'GET',
-                    success: function(data) {
-                        if (data.public_ip) {
-                            $('#main-content').load('http://' + data.public_ip + '/dashboard');
-                        } else {
-                            alert('Failed to get public IP');
-                        }
-                    },
-                    error: function() {
-                        alert('Error fetching public IP');
-                    }
-                });
             });
         });
     </script>

@@ -6,7 +6,6 @@ from django.utils import timezone
 import boto3
 import os
 import logging
-import requests  # 추가된 부분
 
 logger = logging.getLogger(__name__)
 
@@ -80,37 +79,3 @@ def video_upload(request):
 
 def dashboard(request):
     return render(request, 'videoupload/Dashboard.html')
-
-# EKS 관련 추가된 부분 시작
-def get_eks_service_url(service_name, namespace='default'):
-    try:
-        client = boto3.client('eks')
-        response = client.describe_cluster(name=os.getenv('EKS_CLUSTER_NAME'))
-        endpoint = response['cluster']['endpoint']
-        token = boto3.client('sts').get_caller_identity().get('Arn')
-        
-        headers = {
-            'Authorization': f'Bearer {token}'
-        }
-        
-        api_response = requests.get(f'{endpoint}/api/v1/namespaces/{namespace}/services/{service_name}', headers=headers, verify=False)
-        if api_response.status_code == 200:
-            service_info = api_response.json()
-            ip = service_info['status']['loadBalancer']['ingress'][0]['hostname']
-            return ip
-        else:
-            logger.error(f"Failed to get service URL from EKS: {api_response.text}")
-            return None
-    except Exception as e:
-        logger.error(f"Error fetching EKS service URL: {e}")
-        return None
-
-def get_public_ip(request):
-    service_name = 'monitoring-cluster'  # 여기에 특정할 EKS 서비스 이름을 지정하세요.
-    public_ip = get_eks_service_url(service_name)
-
-    if public_ip:
-        return JsonResponse({'public_ip': public_ip})
-    else:
-        return JsonResponse({'error': 'Failed to fetch public IP or no running service found'}, status=500)
-# EKS 관련 추가된 부분 끝
