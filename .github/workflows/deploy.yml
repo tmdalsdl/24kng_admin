@@ -144,7 +144,7 @@ jobs:
       env:
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
-        AWS_EC2_IP: ${{ env.INSTANCE_PUBLIC_IP }}
+        INSTANCE_PUBLIC_IP: ${{ env.INSTANCE_PUBLIC_IP }}
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_S3_REGION_NAME: ${{ secrets.AWS_S3_REGION_NAME }}
@@ -152,8 +152,8 @@ jobs:
         mkdir -p ~/.ssh
         echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan -H $AWS_EC2_IP >> ~/.ssh/known_hosts
-        ssh $SSH_USERNAME@$AWS_EC2_IP <<EOF
+        ssh-keyscan -H $INSTANCE_PUBLIC_IP >> ~/.ssh/known_hosts
+        ssh $SSH_USERNAME@$INSTANCE_PUBLIC_IP <<EOF
           set -e
           sudo apt-get update
           sudo apt-get install -y ca-certificates curl unzip
@@ -181,14 +181,14 @@ jobs:
       env:
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
-        AWS_EC2_IP: ${{ env.INSTANCE_PUBLIC_IP }}
+        INSTANCE_PUBLIC_IP: ${{ env.INSTANCE_PUBLIC_IP }}
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         DOCKER_IMAGE_NAME: ${{ secrets.DOCKER_IMAGE_NAME }}
       run: |
         mkdir -p ~/.ssh
         echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan -H $AWS_EC2_IP >> ~/.ssh/known_hosts
+        ssh-keyscan -H $INSTANCE_PUBLIC_IP >> ~/.ssh/known_hosts
 
         # 현재 디렉터리의 내용을 나열하여 디버깅
         ls -al 
@@ -201,15 +201,15 @@ jobs:
           exit 1  # .env 파일이 없으면 오류와 함께 종료
         fi
 
-        ssh $SSH_USERNAME@$AWS_EC2_IP 'mkdir -p ~/app'
+        ssh $SSH_USERNAME@$INSTANCE_PUBLIC_IP 'mkdir -p ~/app'
 
         # .env 파일을 명시적으로 복사
-        scp .env $SSH_USERNAME@$AWS_EC2_IP:~/app/.env  
+        scp .env $SSH_USERNAME@$INSTANCE_PUBLIC_IP:~/app/.env  
 
         # 모든 파일을 EC2 인스턴스로 복사
-        scp -r ./* $SSH_USERNAME@$AWS_EC2_IP:~/app
+        scp -r ./* $SSH_USERNAME@$INSTANCE_PUBLIC_IP:~/app
 
-        ssh $SSH_USERNAME@$AWS_EC2_IP <<EOF
+        ssh $SSH_USERNAME@$INSTANCE_PUBLIC_IP <<EOF
           cd ~/app
           ls -al  # 디버깅을 위해 현재 디렉터리 내용을 나열
           if [ -f .env ]; then
