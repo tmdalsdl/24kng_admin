@@ -52,16 +52,15 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_S3_REGION_NAME: ${{ secrets.AWS_S3_REGION_NAME }}
-        PUBLIC_KEY_PATH: ${{ secrets.PUBLIC_KEY_PATH }}
         AWS_AMI_ID: ${{ secrets.AWS_AMI_ID }}
       run: |
         terraform apply -auto-approve \
           -var "region=${{ secrets.AWS_S3_REGION_NAME }}" \
           -var "ami_id=${{ secrets.AWS_AMI_ID }}" \
-          -var "instance_type=${{ secrets.AWS_INSTANCE_TYPE }}" \
-          -var "instance_name=${{ secrets.AWS_INSTANCE_NAME }}" \
-          -var "key_name=${{ secrets.AWS_KEY_NAME }}" \
-          -var "public_key_path=${{ secrets.PUBLIC_KEY_PATH }}"
+          -var "instance_type=t2.micro" \
+          -var "instance_name=Admin-server" \
+          -var "key_name=AdminPage-test" \
+          -var "security_group_name=launch-wizard-6"
 
     - name: Get Terraform output
       id: get_output

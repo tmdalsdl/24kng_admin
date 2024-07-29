@@ -1,6 +1,6 @@
 variable "region" {
   description = "AWS region"
-  default     = "ap-northeast-2"  # 필요에 따라 AWS 리전을 설정하세요
+  default     = "ap-northeast-2"
 }
 
 variable "ami_id" {
@@ -9,12 +9,12 @@ variable "ami_id" {
 
 variable "instance_type" {
   description = "Type of instance to use"
-  default     = "t2.micro"  # 필요에 따라 인스턴스 유형을 변경하세요
+  default     = "t2.micro"
 }
 
 variable "instance_name" {
   description = "Name to tag the instance"
-  default     = "Admin-server"  # 인스턴스 이름을 설정하세요
+  default     = "Admin-server"
 }
 
 variable "key_name" {
@@ -22,7 +22,7 @@ variable "key_name" {
   default     = "AdminPage-test"
 }
 
-variable "public_key_path" {
-  description = "Path to the public key file"
-  default     = "~/.ssh/AdminPage-test.pub"
+variable "security_group_name" {
+  description = "Name of the security group"
+  default     = "launch-wizard-6"
 }
