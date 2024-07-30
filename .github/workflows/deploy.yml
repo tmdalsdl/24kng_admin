@@ -31,70 +31,41 @@ jobs:
         docker build -t $DOCKER_USERNAME/$DOCKER_IMAGE_NAME .
         docker push $DOCKER_USERNAME/$DOCKER_IMAGE_NAME
 
-  terraform:
-    runs-on: ubuntu-latest
-    needs: build
-    outputs:
-      instance_public_ip: ${{ steps.get_output.outputs.instance_public_ip }}
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-
-    - name: Set up Terraform
-      uses: hashicorp/setup-terraform@v1
-
-    - name: Terraform Init
-      run: terraform init
-
-    - name: Terraform Apply
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        AWS_S3_REGION_NAME: ${{ secrets.AWS_S3_REGION_NAME }}
-        AWS_AMI_ID: ${{ secrets.AWS_AMI_ID }}
-      run: |
-        terraform apply -auto-approve \
-          -var "region=${{ secrets.AWS_S3_REGION_NAME }}" \
-          -var "ami_id=${{ secrets.AWS_AMI_ID }}" \
-          -var "instance_type=t2.micro" \
-          -var "instance_name=Admin-server" \
-          -var "key_name=AdminPage-test" \
-          -var "security_group_name=launch-wizard-6"
-
-    - name: Get Terraform output
-      id: get_output
-      run: |
-        TERRAFORM_OUTPUT=$(terraform output -raw instance_public_ip)
-        INSTANCE_PUBLIC_IP=$(echo "$TERRAFORM_OUTPUT" | grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}' | head -n 1)
-        if [[ ! $INSTANCE_PUBLIC_IP =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-          echo "Error: Invalid IP address format. Terraform output: $TERRAFORM_OUTPUT"
-          exit 1
-        fi
-        echo "instance_public_ip=$INSTANCE_PUBLIC_IP" >> $GITHUB_OUTPUT
-        echo "Terraform output (IP address): $INSTANCE_PUBLIC_IP"
-
   deploy:
-    needs: terraform
+    needs: build
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_S3_REGION_NAME }}
+
+    - name: Get EC2 Public IP by instance name
+      id: get-ec2-ip
+      run: |
+        EC2_IP=$(aws ec2 describe-instances \
+          --filters "Name=tag:Name,Values=Admin-server" "Name=instance-state-name,Values=running" \
+          --query "Reservations[].Instances[].PublicIpAddress" \
+          --output text)
+        echo "EC2_PUBLIC_IP=${EC2_IP}" >> $GITHUB_ENV
+        echo "EC2 Public IP: ${EC2_IP}"
 
     - name: Debug - Display IP address
-      run: 'echo "Using IP address: ${{ needs.terraform.outputs.instance_public_ip }}"'
+      run: 'echo "Using IP address: ${{ env.EC2_PUBLIC_IP }}"'
 
     - name: Get CloudFront Domain Name
       id: get-cloudfront
       run: |
-        aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws configure set region ${{ secrets.AWS_S3_REGION_NAME }}
         distribution_id=$(aws cloudfront list-distributions --query 'DistributionList.Items[0].Id' --output text)
         cloudfront_domain=$(aws cloudfront get-distribution --id $distribution_id --query 'Distribution.DomainName' --output text)
         echo "CLOUDFRONT_DOMAIN=${cloudfront_domain}" >> $GITHUB_ENV
-        echo "CloudFront Domain: ${cloudfront_domain}" # 디버깅용 메시지 추가
+        echo "CloudFront Domain: ${cloudfront_domain}"
 
     - name: Debug Secrets
       run: |
@@ -103,7 +74,7 @@ jobs:
         echo "AWS_STORAGE_BUCKET_NAME=${{ secrets.AWS_STORAGE_BUCKET_NAME }}"
         echo "AWS_THUMBNAIL_BUCKET_NAME=${{ secrets.AWS_THUMBNAIL_BUCKET_NAME }}"
         echo "AWS_S3_REGION_NAME=${{ secrets.AWS_S3_REGION_NAME }}"
-        echo "ALLOWED_HOSTS=${{ needs.terraform.outputs.instance_public_ip }}"
+        echo "ALLOWED_HOSTS=${{ env.EC2_PUBLIC_IP }}"
         echo "DB_NAME=${{ secrets.DB_NAME }}"
         echo "DB_USER=${{ secrets.DB_USER }}"
         echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}"
@@ -111,49 +82,36 @@ jobs:
         echo "CLOUDFRONT_DOMAIN=${{ env.CLOUDFRONT_DOMAIN }}"
 
     - name: Create .env file
-      env:
-        INSTANCE_PUBLIC_IP: ${{ needs.terraform.outputs.instance_public_ip }}
       run: |
-        set -e  # 오류 발생 시 스크립트 종료
+        set -e
         touch .env
         echo "Touched .env file" >> debug.log
         echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
-        echo "Added AWS_ACCESS_KEY_ID" >> debug.log
         echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
-        echo "Added AWS_SECRET_ACCESS_KEY" >> debug.log
         echo "AWS_STORAGE_BUCKET_NAME=${{ secrets.AWS_STORAGE_BUCKET_NAME }}" >> .env
-        echo "Added AWS_STORAGE_BUCKET_NAME" >> debug.log
         echo "AWS_THUMBNAIL_BUCKET_NAME=${{ secrets.AWS_THUMBNAIL_BUCKET_NAME }}" >> .env
-        echo "Added AWS_THUMBNAIL_BUCKET_NAME" >> debug.log
         echo "AWS_S3_REGION_NAME=${{ secrets.AWS_S3_REGION_NAME }}" >> .env
-        echo "Added AWS_S3_REGION_NAME" >> debug.log
-        echo "ALLOWED_HOSTS=${INSTANCE_PUBLIC_IP}" >> .env
-        echo "Added ALLOWED_HOSTS" >> debug.log
+        echo "ALLOWED_HOSTS=${{ env.EC2_PUBLIC_IP }}" >> .env
         echo "AWS_CLOUDFRONT_URL=https://${{ env.CLOUDFRONT_DOMAIN }}/" >> .env
-        echo "Added AWS_CLOUDFRONT_URL" >> debug.log
         echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
-        echo "Added DB_NAME" >> debug.log
         echo "DB_USER=${{ secrets.DB_USER }}" >> .env
-        echo "Added DB_USER" >> debug.log
         echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
-        echo "Added DB_PASSWORD" >> debug.log
         echo "DB_ROOT_PASSWORD=${{ secrets.DB_ROOT_PASSWORD }}" >> .env
-        echo "Added DB_ROOT_PASSWORD" >> debug.log
-        cat .env  # 디버깅용으로 .env 파일 내용을 출력
-        cat debug.log  # 디버깅용으로 로그 파일 내용을 출력
-        ls -al  # 디버깅용으로 현재 디렉터리 내용을 출력
+        cat .env
+        cat debug.log
+        ls -al
         echo "Finished creating .env file"
 
     - name: Install Docker and AWS CLI on EC2
       env:
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
-        INSTANCE_PUBLIC_IP: ${{ needs.terraform.outputs.instance_public_ip }}
+        INSTANCE_PUBLIC_IP: ${{ env.EC2_PUBLIC_IP }}
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_S3_REGION_NAME: ${{ secrets.AWS_S3_REGION_NAME }}
       run: |
-        set -x  # 실행되는 모든 명령어를 출력
+        set -x
         if [ -z "$INSTANCE_PUBLIC_IP" ]; then
           echo "Error: INSTANCE_PUBLIC_IP is empty"
           exit 1
@@ -167,7 +125,6 @@ jobs:
         echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
         
-        # ssh-keyscan with retry logic
         max_retries=5
         retry_count=0
         while [ $retry_count -lt $max_retries ]; do
@@ -187,12 +144,11 @@ jobs:
         fi
         
         ssh -v $SSH_USERNAME@$INSTANCE_PUBLIC_IP <<EOF 2>&1
-          set -ex  # 오류 발생 시 즉시 종료하고 모든 명령어 출력
+          set -ex
           echo "Successfully connected to the instance"
           sudo apt-get update
           sudo apt-get install -y ca-certificates curl unzip
           echo "Basic packages installed"
-          # Docker 설치
           sudo install -m 0755 -d /etc/apt/keyrings
           sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
           sudo chmod a+r /etc/apt/keyrings/docker.asc
@@ -203,12 +159,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
           echo "Docker installed"
-          # AWS CLI 설치
           curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
           unzip awscliv2.zip
           sudo ./aws/install
           echo "AWS CLI installed"
-          # AWS CLI 구성
           aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
           aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
           aws configure set region $AWS_S3_REGION_NAME
@@ -220,7 +174,7 @@ jobs:
       env:
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
-        INSTANCE_PUBLIC_IP: ${{ needs.terraform.outputs.instance_public_ip }}
+        INSTANCE_PUBLIC_IP: ${{ env.EC2_PUBLIC_IP }}
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         DOCKER_IMAGE_NAME: ${{ secrets.DOCKER_IMAGE_NAME }}
       run: |
@@ -229,32 +183,28 @@ jobs:
         chmod 600 ~/.ssh/id_rsa
         ssh-keyscan -H $INSTANCE_PUBLIC_IP >> ~/.ssh/known_hosts
 
-        # 현재 디렉터리의 내용을 나열하여 디버깅
         ls -al 
 
-        # .env 파일이 존재하는지 확인
         if [ -f .env ]; then
-          echo ".env 파일이 현재 디렉터리에 존재합니다."
+          echo ".env file exists in the current directory."
         else
-          echo ".env 파일이 현재 디렉터리에 존재하지 않습니다."
-          exit 1  # .env 파일이 없으면 오류와 함께 종료
+          echo ".env file does not exist in the current directory."
+          exit 1
         fi
 
         ssh $SSH_USERNAME@$INSTANCE_PUBLIC_IP 'mkdir -p ~/app'
 
-        # .env 파일을 명시적으로 복사
         scp .env $SSH_USERNAME@$INSTANCE_PUBLIC_IP:~/app/.env  
 
-        # 모든 파일을 EC2 인스턴스로 복사
         scp -r ./* $SSH_USERNAME@$INSTANCE_PUBLIC_IP:~/app
 
         ssh $SSH_USERNAME@$INSTANCE_PUBLIC_IP <<EOF
           cd ~/app
-          ls -al  # 디버깅을 위해 현재 디렉터리 내용을 나열
+          ls -al
           if [ -f .env ]; then
-            echo $(cat .env)  # 디버깅을 위해 .env 파일 내용을 출력
+            echo $(cat .env)
           else
-            echo ".env 파일을 찾을 수 없습니다."
+            echo ".env file not found."
           fi
           sudo docker compose down
           sudo docker compose up -d --build

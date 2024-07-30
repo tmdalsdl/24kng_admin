@@ -21,6 +21,7 @@ services:
       - DB_NAME=${DB_NAME}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
+      - EKS_DASHBOARD_URL=${EKS_DASHBOARD_URL}
     depends_on:
       - mariadb
     restart: always

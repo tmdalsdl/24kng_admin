@@ -9,6 +9,9 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# EKS 대시보드 URL을 환경 변수에서 가져옵니다.
+DASHBOARD_URL = os.getenv('EKS_DASHBOARD_URL')
+
 def upload_to_s3(file, bucket_name, s3_path):
     try:
         s3 = boto3.client('s3')
@@ -18,7 +21,10 @@ def upload_to_s3(file, bucket_name, s3_path):
         raise
 
 def admin_page(request):
-    return render(request, 'videoupload/AdminPage.html')
+    context = {
+        'dashboard_url': DASHBOARD_URL
+    }
+    return render(request, 'videoupload/AdminPage.html', context)
 
 def video_upload(request):
     if request.method == 'POST':
@@ -76,6 +82,3 @@ def video_upload(request):
     else:
         form = VideoForm()
     return render(request, 'videoupload/VideoUpload.html', {'form': form})
-
-def dashboard(request):
-    return render(request, 'videoupload/Dashboard.html')

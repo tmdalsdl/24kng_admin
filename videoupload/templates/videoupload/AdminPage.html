@@ -44,7 +44,7 @@
             background-color: #444;
         }
         .nav-link {
-            min-height: 20px; /* 최소 높이를 설정하여 일정한 크기를 유지 */
+            min-height: 20px;
         }
         .user-info {
             display: flex;
@@ -67,10 +67,10 @@
                 <span>Admin Page</span>
             </div>
             <div class="nav-item">
-                <a href="#" class="nav-link" data-url="{% url 'dashboard' %}">대시보드</a>
+                <a href="#" class="nav-link active" data-url="{% url 'video_upload' %}">비디오 업로드</a>
             </div>
             <div class="nav-item">
-                <a href="#" class="nav-link" data-url="{% url 'video_upload' %}">비디오 업로드</a>
+                <a href="{{ dashboard_url }}" class="nav-link" target="_blank">대시보드</a>
             </div>
         </div>
         <div class="main-content" id="main-content">
@@ -80,15 +80,18 @@
 
     <script>
         $(document).ready(function() {
-            // 페이지 로드 시 기본 콘텐츠 로드
-            $('#main-content').load("{% url 'dashboard' %}");
+            // 페이지 로드 시 비디오 업로드 화면 로드
+            $('#main-content').load("{% url 'video_upload' %}");
 
             $('.nav-link').on('click', function(e) {
-                e.preventDefault();
-                $('.nav-link').removeClass('active');
-                $(this).addClass('active');
                 var url = $(this).data('url');
-                $('#main-content').load(url);
+                if (url) {
+                    e.preventDefault();
+                    $('.nav-link').removeClass('active');
+                    $(this).addClass('active');
+                    $('#main-content').load(url);
+                }
+                // 대시보드 링크는 기본 동작 (새 창에서 열기)을 수행합니다.
             });
         });
     </script>
