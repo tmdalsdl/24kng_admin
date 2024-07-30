@@ -80,6 +80,7 @@ jobs:
         echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}"
         echo "DB_ROOT_PASSWORD=${{ secrets.DB_ROOT_PASSWORD }}"
         echo "CLOUDFRONT_DOMAIN=${{ env.CLOUDFRONT_DOMAIN }}"
+        echo "EKS_DASHBOARD_URL=${{ secrets.EKS_DASHBOARD_URL }}"
 
     - name: Create .env file
       run: |
@@ -97,6 +98,7 @@ jobs:
         echo "DB_USER=${{ secrets.DB_USER }}" >> .env
         echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
         echo "DB_ROOT_PASSWORD=${{ secrets.DB_ROOT_PASSWORD }}" >> .env
+        echo "EKS_DASHBOARD_URL=${{ secrets.EKS_DASHBOARD_URL }}" >> .env
         cat .env
         cat debug.log
         ls -al
