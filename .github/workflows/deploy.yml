@@ -117,9 +117,6 @@ jobs:
           exit 1
         fi
         
-        echo "Waiting for 60 seconds to allow EC2 instance to fully boot..."
-        sleep 60
-        
         echo "Attempting to connect to $INSTANCE_PUBLIC_IP"
         mkdir -p ~/.ssh
         echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
